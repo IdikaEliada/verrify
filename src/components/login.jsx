@@ -1,22 +1,24 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+const DOMAIN = "verrify.app";
+
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
+  const [matric, setMatric] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, userRole } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    const trimmed = matric.trim();
+    if (!trimmed) { setError("Please enter your matric number."); return; }
     setLoading(true);
     try {
+      const email = `${trimmed.toLowerCase()}@${DOMAIN}`;
       await login(email, password);
-      // Navigation handled by HomePage's useEffect watching userRole
     } catch (err) {
       setError(getErrorMessage(err.code));
     } finally {
@@ -28,15 +30,16 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block text-xs font-semibold tracking-widest uppercase text-[#8a7f72] mb-2">
-          Email
+          Matric Number
         </label>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={matric}
+          onChange={(e) => setMatric(e.target.value)}
           required
-          placeholder="you@university.edu"
-          className="w-full bg-[#141414] border border-[#2a2520] rounded-lg px-4 py-3 text-[#e8e0d0] placeholder-[#3a3530] focus:outline-none focus:border-[#c8a96e] transition-colors duration-200"
+          placeholder="e.g. 20231376642"
+          autoComplete="username"
+          className="w-full bg-[#141414] border border-[#2a2520] rounded-lg px-4 py-3 text-[#e8e0d0] placeholder-[#3a3530] focus:outline-none focus:border-[#c8a96e] transition-colors duration-200 font-mono tracking-wider"
         />
       </div>
 
@@ -50,8 +53,10 @@ export default function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
           placeholder="••••••••"
+          autoComplete="current-password"
           className="w-full bg-[#141414] border border-[#2a2520] rounded-lg px-4 py-3 text-[#e8e0d0] placeholder-[#3a3530] focus:outline-none focus:border-[#c8a96e] transition-colors duration-200"
         />
+        <p className="text-[#3a3530] text-xs mt-1.5">Default password is your matric number.</p>
       </div>
 
       {error && (
